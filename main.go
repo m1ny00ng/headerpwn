@@ -64,11 +64,15 @@ func main() {
 
 	var wg sync.WaitGroup
 	results := make(chan Result)
+        rateLimiter := time.NewTicker(time.Second / 3) // 3 requests per second
+        defer rateLimiter.Stop()
 
 	for _, header := range headers {
 		wg.Add(1)
 		go func(header string) {
 			defer wg.Done()
+
+			<-rateLimiter.C
 
 			response, err := makeRequest(*urlPtr, header, *proxyPtr)
 			if err != nil {
